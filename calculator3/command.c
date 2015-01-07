@@ -51,9 +51,9 @@ void clear_screen(char *s)
 	// TODO: not working
 	return;
 	// assume *nix
-	system("clear >null");
+    //system("clear >null");
 	// assume Windows
-	system("cls >null");
+    //system("cls >null");
 
 	//system("clear");
 }
@@ -120,10 +120,13 @@ struct command_s {
 
 int iscommand(char *s)
 {
-	while (*s == '*') s++;	// get rid of the annoying wrongly-added *'s
+    if ( DEBUG ) printf("[Debug] processing command '%s'\n", s);
+	while (*s == '*' || *s == '(') s++;	// get rid of the annoying wrongly-added *'s
 	char temp[20];
 	sscanf(s, "%20s", temp);
-	for(int i = 0; i<sizeof commands/sizeof commands[0]; ++i) {
+    for (int i = 0; i < strlen(temp); i++)
+        if (temp[i] == ')') {temp[i] = 0; break;}
+	for (int i = 0; i<sizeof commands/sizeof commands[0]; ++i) {
 		if(strcmp(temp, commands[i].command) == 0) {
 			(*(commands[i].eval))(s + strlen(commands[i].command) + 1);
 			return 1;

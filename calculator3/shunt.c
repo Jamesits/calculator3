@@ -17,9 +17,12 @@
 #include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
 
 #define MAXOPSTACK 64
 #define MAXNUMSTACK 64
+#define MAXEXPRSTACK 128
 
 extern int errorcode;
 extern jmp_buf env;
@@ -49,11 +52,12 @@ struct op_s
     {')', 0, ASSOC_NONE, 0, NULL},
     {-1, 10, ASSOC_RIGHT, 1, eval_sin, "sin"},
     {-2, 10, ASSOC_RIGHT, 1, eval_cos, "cos"},
-    {-3, 10, ASSOC_NONE, 1, eval_tan, "tan"},
-    {-4, 10, ASSOC_NONE, 1, eval_ln, "ln"},
-    {-5, 10, ASSOC_NONE, 1, eval_log, "log"},
+    {-3, 10, ASSOC_RIGHT, 1, eval_tan, "tan"},
+    {-4, 10, ASSOC_RIGHT, 1, eval_ln, "ln"},
+    {-5, 10, ASSOC_RIGHT, 1, eval_log, "log"},
     {'!', 11, ASSOC_LEFT, 1, eval_frac},
 };
+
 struct op_s * getop(char ch)
 {
     for ( int i = 0; i < sizeof ops / sizeof ops[0]; ++i )
@@ -171,6 +175,7 @@ void shunt_op(struct op_s *op)
                 push_numstack( pop->eval(n2, n1) );
             }
         }
+        // found left bracklet
         if ( !isopleftbracklet(opstack[nopstack - 1]) )
         {
             pop = pop_opstack();
@@ -181,8 +186,9 @@ void shunt_op(struct op_s *op)
                 push_numstack( pop->eval(n2, n1) );
             }
         }
-        if ( !( pop = pop_opstack() ) ||
-            !isopleftbracklet(opstack[nopstack - 1]) )
+        // not correct symbol
+        if ( !( pop = pop_opstack() ) || op != NULL ||
+            !isopleftbracklet(opstack[nopstack - 1]))
         {
             raise_error(4, __func__);
         }
@@ -226,8 +232,10 @@ void init_stack()
     nnumstack = 0;
 }
 
-math_type eval(char *input_array, math_type *result)
+math_type eval2(char *input_array, math_type *result)
 {
+    printf("Eval2 process str: %s\n", input_array);
+    
     char *expr;                 // read buffer pointer
     char *tstart = NULL;        // the pointer current token starts
     struct op_s startop = {'X', 0, ASSOC_NONE, 0, NULL};      // Dummy operator
@@ -249,9 +257,9 @@ math_type eval(char *input_array, math_type *result)
                     if ( DEBUG ) printf("[Debug] Got operator %c\n", op->op);
                     // replace uniary operators
                     if ( op->op == '-' ) op = getop('_');
-                    else if ( op->op == '+' || op->op == '*' )
-                        op = getop('N');
-                    else if ( !isopleftbracklet(op) )
+                    //else if ( op->op == '+' || op->op == '*' )
+                    //    op = getop('N');
+                    else if ( !(isopleftbracklet(op) || op->op < 0))
                     {
                         if ( DEBUG )
                             printf(
@@ -314,6 +322,76 @@ math_type eval(char *input_array, math_type *result)
         raise_error(4, __func__);
     }
     *result = numstack[nnumstack - 1];
+    
+    return errorcode;
+}
+
+bool isNumber(char *str)
+{
+    for (int i = 0; i < strlen(str); i++)
+        if (!iisdigit(str[i])) {
+            return false;
+        }
+    return true;
+}
+
+math_type eval(char *input_array, math_type *result)
+{
+    char *expr;                 // read buffer pointer
+    
+    char *last_leftbracklet;
+    
+    math_type r = 0;            // temp result
+    int errorcode = 0;
+    
+    void *gctemp = NULL;
+    
+    while (!isNumber(input_array)) {
+        init_stack();
+        last_leftbracklet = NULL;
+        gctemp = (void *)input_array;
+        
+        for ( expr = input_array; *expr; ++expr )
+        {
+            if (*expr == '(') {
+                last_leftbracklet = expr;
+            }
+            if (*expr == ')') {
+                break;
+            }
+        }
+        
+        
+        char *process_string = (char *)malloc(sizeof(char) * (expr - last_leftbracklet + 2));
+        memset(process_string, 0, expr - last_leftbracklet + 2);
+        memcpy(process_string, last_leftbracklet + 1, (expr - last_leftbracklet - 1));
+        printf("Center: %s\n", process_string);
+        if ((errorcode = eval2(process_string, &r)) != 0) break;
+        free(process_string);
+        char *new_input_array = (char *)malloc(sizeof(char) * MAXEXPRSTACK);
+        memcpy(new_input_array, input_array, (last_leftbracklet - input_array));
+        sprintf(new_input_array + (last_leftbracklet - input_array), math_type_format, r);
+        memcpy(new_input_array + strlen(new_input_array), expr + 1, strlen(expr + 1) + 1);
+        printf("New array: %s\n", new_input_array);
+        free(input_array); gctemp = NULL;
+        input_array = new_input_array;
+        //printf("result: %f\n", *result);
+        
+    }
+    init_stack();
+    printf("Final str: %s\n", input_array);
+    /*
+    char *new_input_array = (char *)malloc(sizeof(char) * MAXEXPRSTACK);
+    memcpy(new_input_array, input_array + 1, strlen(input_array) - 2);
+    free(input_array);
+    eval2(new_input_array, result);
+    free(new_input_array);
+    result = &r;
+     */
+    if (gctemp != NULL) {
+        free(gctemp);
+    }
+    sscanf(input_array, math_type_format, result);
     
     return errorcode;
 }

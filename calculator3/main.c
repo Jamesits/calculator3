@@ -43,16 +43,6 @@ int errorcode = 0;
 math_type last_result = 0;
 int angle_mode = MODE_RAD;
 
-void init()
-{
-    errorcode = 0;
-    input = (char *) malloc(length = 4);
-    *input = 0;
-    p = input;
-    init_stack();
-    printf("calculator[%s] > ", angle_mode_name[angle_mode]);
-}
-
 void addchar(char c)
 {
     long n;
@@ -70,6 +60,18 @@ void addchar(char c)
     *p++ = c;         // store the input, then set the pointer + 1
 }
 
+void init()
+{
+    fseek(stdin, 0, SEEK_END);  // flush stdin buffer
+    errorcode = 0;
+    input = (char *) malloc(length = 4);
+    *input = 0;
+    p = input;
+    init_stack();
+    printf("calculator[%s] > ", angle_mode_name[angle_mode]);
+    addchar('(');
+}
+
 int main()
 {
     clear_screen("");
@@ -81,6 +83,7 @@ int main()
     
     init();
     while ( ( c = getchar() ) != EOF )  // input
+    {
         if (c != '\n')  // in one line
         {
             if ( lastchar != 0 && !iisspace(lastchar) &&
@@ -94,68 +97,68 @@ int main()
                 lastchar = c;
             }
             addchar(c);     // push to input queue
-            if ( DEBUG ) printf("[Debug] got string '%s'\n", input);
             
         } else{    // enter pressed, start string process
-            if ( !setjmp(env) )
-            {
-                // assume input data is an expression
-                *p = 0;
-                
-                // check brecklet mismatch
-                int bracklet_count = 0;
-                for (int i = 0; i < strlen(input); i++)
+            addchar(')');
+            if ( DEBUG ) printf("[Debug] got string '%s'\n", input);
+            if ( strcmp(input, "()") != 0 && !iscommand(input) ) // if not a command
+                if ( !setjmp(env) )
                 {
-                    if (input[i] == '(') bracklet_count++;
-                    if (input[i] == ')') bracklet_count--;
-                    if (bracklet_count < 0) raise_error(4, __func__);
-                }
-                if (bracklet_count > 0) // auto match bracklets
-                {
-                    fprintf(stderr,
-                            "[Warning] An attempt was made to fix mismatched parentheses, brackets, or braces.\n");
-                    while (bracklet_count-- > 0)
-                        addchar(')');
-                }
-                
-                if ( DEBUG )  printf("[Debug] Real input string: %s\n", input);
-                // char *processed_input_string;
-                for (int i = 0; i < sizeof ops / sizeof ops[0]; ++i)
-                {
-                    if ( strlen(ops[i].fullname) )
+                    // assume input data is an expression
+                    *p = 0;
+                    
+                    // check brecklet mismatch
+                    int bracklet_count = 0;
+                    for (int i = 0; i < strlen(input); i++)
                     {
-                        str_replace(input, ops[i].fullname, ops[i].op);
+                        if (input[i] == '(') bracklet_count++;
+                        if (input[i] == ')') bracklet_count--;
+                        if (bracklet_count < 0) raise_error(4, __func__);
+                    }
+                    if (bracklet_count > 0) // auto match bracklets
+                    {
+                        fprintf(stderr,
+                                "[Warning] An attempt was made to fix mismatched parentheses, brackets, or braces.\n");
+                        while (bracklet_count-- > 0)
+                            addchar(')');
+                    }
+                    
+                    if ( DEBUG )  printf("[Debug] Real input string: %s\n", input);
+                    // char *processed_input_string;
+                    for (int i = 0; i < sizeof ops / sizeof ops[0]; ++i)
+                    {
+                        if ( strlen(ops[i].fullname) )
+                        {
+                            str_replace(input, ops[i].fullname, ops[i].op);
+                        }
+                    }
+                    if ( DEBUG )  printf("[Debug] Real processed string: %s\n", input);
+                    // calculate
+                    math_type *pc = malloc( sizeof(math_type) );
+                    int return_code = eval(input, pc);
+                    
+                    // prepare for print result
+                    if (!return_code)
+                    {
+                        // truncate zeros in the end
+                        last_result = *pc;
+                        char temp[80];
+                        sprintf(temp, math_type_output_format, *pc);
+                        while (temp[strlen(temp) - 1] == '0')
+                            temp[strlen(temp) - 1] = 0;
+                        if (temp[strlen(temp) - 1] ==
+                            '.') temp[strlen(temp) - 1] = 0;
+                        // print result
+                        printf("= %s\n", temp);
                     }
                 }
-                if ( DEBUG )  printf("[Debug] Real processed string: %s\n", input);
-                // calculate
-                math_type *pc = malloc( sizeof(math_type) );
-                int return_code = eval(input, pc);
-                
-                // prepare for print result
-                if (!return_code)
-                {
-                    // truncate zeros in the end
-                    last_result = *pc;
-                    char temp[80];
-                    sprintf(temp, math_type_output_format, *pc);
-                    while (temp[strlen(temp) - 1] == '0')
-                        temp[strlen(temp) - 1] = 0;
-                    if (temp[strlen(temp) - 1] ==
-                        '.') temp[strlen(temp) - 1] = 0;
-                    // print result
-                    printf("= %s\n", temp);
-                }
-            } else {        // if not an expression, assume it is a command and
-                            // try to eval it
-                if ( !iscommand(input) ) // if not a command
-                    ; // nope!
-            }
             
             // start a new line
-            free(input);
+            //if (input != NULL) free(input);
             init();
+            continue;
         }
     
+    }
     return EXIT_SUCCESS;
 }

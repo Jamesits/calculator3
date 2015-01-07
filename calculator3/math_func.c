@@ -126,5 +126,5 @@ math_type str_to_num(char *str)
 
 int iisdigit(char ch)
 {
-    return ( (ch >= '0' && ch <= '9') || ch == '.' || ch == '$' );
+    return ( (ch >= '0' && ch <= '9') || ch == '.' || ch == '$' || ch == '_');
 }
