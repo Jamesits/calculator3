@@ -214,6 +214,7 @@
 		1AAC0E3F1A5D1B5B00218D6B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -221,6 +222,7 @@
 		1AAC0E401A5D1B5B00218D6B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
