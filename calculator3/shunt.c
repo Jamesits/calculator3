@@ -233,7 +233,7 @@ void init_stack()
 
 math_type eval2(char *input_array, math_type *result)
 {
-    printf("Eval2 process str: %s\n", input_array);
+    if ( DEBUG ) printf("Eval2 process str: %s\n", input_array);
     
     char *expr;                 // read buffer pointer
     char *tstart = NULL;        // the pointer current token starts
@@ -364,21 +364,21 @@ math_type eval(char *input_array, math_type *result)
         char *process_string = (char *)malloc(sizeof(char) * (expr - last_leftbracklet + 2));
         memset(process_string, 0, expr - last_leftbracklet + 2);
         memcpy(process_string, last_leftbracklet + 1, (expr - last_leftbracklet - 1));
-        printf("Center: %s\n", process_string);
+        if ( DEBUG ) printf("Center: %s\n", process_string);
         if ((errorcode = eval2(process_string, &r)) != 0) break;
         free(process_string);
         char *new_input_array = (char *)malloc(sizeof(char) * MAXEXPRSTACK);
         memcpy(new_input_array, input_array, (last_leftbracklet - input_array));
         sprintf(new_input_array + (last_leftbracklet - input_array), math_type_format, r);
         memcpy(new_input_array + strlen(new_input_array), expr + 1, strlen(expr + 1) + 1);
-        printf("New array: %s\n", new_input_array);
+        if ( DEBUG ) printf("New array: %s\n", new_input_array);
         free(input_array); gctemp = NULL;
         input_array = new_input_array;
         //printf("result: %f\n", *result);
         
     }
     init_stack();
-    printf("Final str: %s\n", input_array);
+    if ( DEBUG ) printf("Final str: %s\n", input_array);
     /*
     char *new_input_array = (char *)malloc(sizeof(char) * MAXEXPRSTACK);
     memcpy(new_input_array, input_array + 1, strlen(input_array) - 2);

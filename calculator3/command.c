@@ -4,6 +4,7 @@
 #include <math.h>
 #include "errorcode.h"
 #include "angle.h"
+#include "debug.h"
 
 extern int angle_mode;
 
