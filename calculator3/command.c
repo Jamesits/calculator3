@@ -18,7 +18,7 @@ void help(char *s)
 	puts("Usage:");
 	puts("\ttype any math expressions and press enter.");
 	puts("\tSupported operators: + - * / %(mod) ^(exp)");
-	puts("\tSupported functions: sin cos tan log ln !");
+	puts("\tSupported functions: sin cos tan log ln frac(! works sometimes too)");
 	puts("\tType $ for result of last expression.");
 	puts("");
 	puts("Available commands:");

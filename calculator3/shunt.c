@@ -56,6 +56,7 @@ struct op_s
     {-4, 10, ASSOC_RIGHT, 1, eval_ln, "ln"},
     {-5, 10, ASSOC_RIGHT, 1, eval_log, "log"},
     {'!', 11, ASSOC_LEFT, 1, eval_frac},
+    {-6, 10, ASSOC_RIGHT, 1, eval_frac, "frac"},
 };
 
 struct op_s * getop(char ch)
@@ -198,9 +199,7 @@ void shunt_op(struct op_s *op)
     
     if ( op->assoc == ASSOC_RIGHT )
     {
-        while ( nopstack && op->prec < opstack[nopstack - 1]->prec )   // if
-                                                                       // lower
-                                                                       // prec
+        while ( nopstack && op->prec < opstack[nopstack - 1]->prec )   // if lower prec
         {
             pop = pop_opstack();
             n1 = pop_numstack();

@@ -122,6 +122,10 @@ int main()
                         while (bracklet_count-- > 0)
                             addchar(')');
                     }
+                    for (int i = 0; i < strlen(input); i++)
+                        if (input[i] == '!')
+                            fprintf(stderr,
+                                    "[Warning] Deprecated symbol \'!\': this sometimes lead to wrong result. Use function frac(x) instead.\n");
                     
                     if ( DEBUG )  printf("[Debug] Real input string: %s\n", input);
                     // char *processed_input_string;
