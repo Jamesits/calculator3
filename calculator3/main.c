@@ -160,6 +160,7 @@ int main()
             // start a new line
             //if (input != NULL) free(input);
             init();
+            lastchar = 0;
             continue;
         }
     
