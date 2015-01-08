@@ -49,12 +49,15 @@ void print_about(char *s)
 
 void clear_screen(char *s)
 {
-	// TODO: not working
+	// FUCK WINDOWS
+    system("@echo off");
+    system("@chcp 65001");
+    system("@cls");
 	return;
 	// assume *nix
-    //system("clear >null");
+    //system("clear >/dev/null");
 	// assume Windows
-    //system("cls >null");
+    //system("cls");
 
 	//system("clear");
 }
