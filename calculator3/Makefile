@@ -5,9 +5,9 @@
 SRC = main.c
 PROGRAM = ./calc
 OBJ = $(SRC:.c=.o)
-CC = clang
-CFLAGS = -O -Wall -Wno-invalid-source-encoding
-
+CC = gcc 
+CFLAGS = -O -Wall -Wno-misleading-indentation
+LINKPARAM = -lm
 
 : $(PROGRAM)
 

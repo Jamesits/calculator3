@@ -50,12 +50,12 @@ void print_about(char *s)
 void clear_screen(char *s)
 {
 	// FUCK WINDOWS
-    system("@echo off");
-    system("@chcp 65001");
-    system("@cls");
-	return;
+    //system("@echo off");
+    //system("@chcp 65001");
+    //system("@cls");
+	//return;
 	// assume *nix
-    //system("clear >/dev/null");
+    system("clear >/dev/null");
 	// assume Windows
     //system("cls");
 
