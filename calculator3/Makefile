@@ -14,7 +14,7 @@ LINKPARAM = -lm
 # 链接
 $(PROGRAM): $(OBJ)
 	@echo "> Linking $(OBJ)..."
-	@$(CC) -o $(PROGRAM) $(LINKPARAM) $(OBJ)
+	@$(CC) -o $(PROGRAM) $(OBJ) $(LINKPARAM)
 
 # 编译
 %.o: %.c
